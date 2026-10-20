@@ -7,115 +7,315 @@
 <meta name="theme-color" content="#101b35">
 <title>Ehab AI Solver</title>
 <style>
+:root{--bg:#101b35;--card:#1b2d4c;--blue:#16b9dc;--text:#f5f8ff;--muted:#c4d3e8}
 *{box-sizing:border-box}
-body{margin:0;background:#101b35;color:white;font-family:Arial,sans-serif}
-header{text-align:center;padding:24px 12px;background:#172746}
-h1{color:#62d9ff}
-main{max-width:650px;margin:auto;padding:15px}
-.card{background:#1b2d4c;padding:18px;border-radius:16px;margin:15px 0}
-p{line-height:1.8;color:#dce8f7}
-button,.upload{display:block;width:100%;padding:14px;margin-top:12px;border:0;border-radius:11px;background:#16b9dc;color:#071629;font-size:16px;font-weight:bold;text-align:center}
-.secondary{background:#e0eaff}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
+header{text-align:center;padding:25px 15px;background:linear-gradient(135deg,#172746,#123e63)}
+header h1{color:#62d9ff;margin:10px 0}
+header p{margin:0;color:var(--muted)}
+main{max-width:720px;margin:auto;padding:14px}
+.card{background:var(--card);padding:18px;border-radius:17px;margin:15px 0;box-shadow:0 6px 20px #0002}
+h2{font-size:21px;margin-top:0}
+p{line-height:1.8;color:var(--muted)}
+button,.upload,select{width:100%;padding:14px;margin-top:10px;border:0;border-radius:11px;font-size:16px;font-weight:bold}
+button,.upload{background:var(--blue);color:#071629;text-align:center;cursor:pointer;display:block}
+.secondary{background:#e0eaff;color:#172746}
 input[type=file]{display:none}
-textarea{width:100%;min-height:140px;padding:12px;font-size:17px;border-radius:10px}
-#preview{display:none;width:100%;margin-top:15px;border-radius:10px}
-#status{white-space:pre-wrap}
+select,textarea{background:#fff;color:#172746}
+select{margin-bottom:8px}
+textarea{width:100%;min-height:180px;padding:13px;font-size:17px;line-height:1.8;border:0;border-radius:11px;resize:vertical}
+#preview{display:none;width:100%;max-height:400px;object-fit:contain;background:#fff;margin-top:14px;border-radius:12px}
+#status{white-space:pre-wrap;background:#10203a;padding:12px;border-radius:10px}
 .small{font-size:13px}
+.pill{display:inline-block;background:#123e63;color:#8de8ff;border-radius:20px;padding:7px 12px;font-size:13px}
+button:disabled{opacity:.6}
+footer{text-align:center;color:var(--muted);padding:20px}
 </style>
 </head>
 <body>
 <header>
-<div style="font-size:42px">📸 🧠</div>
-<h1>Ehab AI Solver</h1>
-<p>صوّر السؤال وحوّل الصورة إلى نص</p>
+  <div style="font-size:42px">📸 🧠</div>
+  <h1>Ehab AI Solver</h1>
+  <p>صوّر السؤال واستخرج النص بسهولة</p>
+  <p><span class="pill">نسخة مطوّرة للتابلت والموبايل</span></p>
 </header>
+
 <main>
 <section class="card">
-<h2>📷 صورة الامتحان</h2>
-<label class="upload" for="camera">فتح الكاميرا</label>
-<input id="camera" type="file" accept="image/*" capture="environment">
-<label class="upload secondary" for="gallery">اختيار صورة من المعرض</label>
-<input id="gallery" type="file" accept="image/*">
-<img id="preview" alt="صورة السؤال">
-<button id="read">📝 اقرأ الأسئلة من الصورة</button>
-<p id="status">اختار صورة واضحة، ثم اضغط اقرأ الأسئلة.</p>
+  <h2>📷 صورة الامتحان</h2>
+  <p>اختار صورة واضحة، وخلي الورقة مستقيمة والإضاءة جيدة.</p>
+
+  <label class="upload" for="camera">📸 افتح الكاميرا</label>
+  <input id="camera" type="file" accept="image/*" capture="environment">
+
+  <label class="upload secondary" for="gallery">🖼️ اختار صورة من المعرض</label>
+  <input id="gallery" type="file" accept="image/*">
+
+  <img id="preview" alt="معاينة صورة الامتحان">
+
+  <label for="language" style="display:block;margin-top:16px">لغة الأسئلة:</label>
+  <select id="language">
+    <option value="ara">العربية</option>
+    <option value="eng">الإنجليزية</option>
+    <option value="ara+eng" selected>العربية والإنجليزية</option>
+  </select>
+
+  <button id="read">📝 اقرأ الأسئلة من الصورة</button>
+  <button id="clearImage" class="secondary">إلغاء الصورة المختارة</button>
+  <p id="status" role="status">اختار صورة أولًا، ثم اضغط على زر القراءة.</p>
 </section>
 
 <section class="card">
-<h2>النص المستخرج</h2>
-<textarea id="question" placeholder="النص المقروء سيظهر هنا..."></textarea>
-<button id="save">حفظ النص</button>
-<button id="restore" class="secondary">استرجاع النص المحفوظ</button>
+  <h2>📄 النص المستخرج</h2>
+  <p>راجع النص وعدّل أي كلمة أو رقم اتقرأ بشكل غير صحيح.</p>
+  <textarea id="question" placeholder="النص المستخرج هيظهر هنا..."></textarea>
+  <button id="save">💾 احفظ النص</button>
+  <button id="restore" class="secondary">📂 استرجع النص المحفوظ</button>
+  <button id="copy" class="secondary">📋 انسخ النص</button>
+  <button id="download" class="secondary">⬇️ احفظ النص كملف</button>
 </section>
 
 <section class="card">
-<h2>🧠 الحل</h2>
-<p>قارئ الصور يستخرج النص فقط. لم نضف بعد نموذج ذكاء اصطناعي يحل الأسئلة تلقائيًا.</p>
-<p class="small">اختبر النص المستخرج وصحّح أي أرقام أو كلمات قرأها بشكل خاطئ.</p>
+  <h2>🧠 حل الأسئلة</h2>
+  <p>
+    قارئ الصور بيحوّل الصورة إلى نص فقط، ولا يضمن صحة كل كلمة.
+    بعد استخراج النص، تقدر تنسخه وتستخدمه لطلب الحل والشرح.
+  </p>
+  <button id="prepare">📚 جهّز النص لطلب الحل</button>
+  <p class="small">
+    هذه النسخة لا تحتوي على نموذج ذكاء اصطناعي مدمج لحل الأسئلة تلقائيًا.
+    إضافة الحل التلقائي تحتاج إلى خدمة ذكاء اصطناعي متصلة بالموقع.
+  </p>
+</section>
+
+<section class="card">
+  <h2>ℹ️ نصائح لقراءة أفضل</h2>
+  <p>• استخدم صورة واضحة وغير مهزوزة.</p>
+  <p>• تجنب الظلال والانعكاس على الورقة.</p>
+  <p>• جرّب اختيار لغة واحدة إذا فشلت القراءة باللغتين.</p>
+  <p>• أول تشغيل يحتاج إنترنت لتحميل مكتبة القراءة وملفات اللغة.</p>
 </section>
 </main>
 
+<footer>صُنع بحماس ❤️ بواسطة Ehab</footer>
+
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <script>
-const camera=document.getElementById('camera');
-const gallery=document.getElementById('gallery');
-const preview=document.getElementById('preview');
-const question=document.getElementById('question');
-const status=document.getElementById('status');
-let selectedImage=null;
+const camera = document.getElementById('camera');
+const gallery = document.getElementById('gallery');
+const preview = document.getElementById('preview');
+const question = document.getElementById('question');
+const statusBox = document.getElementById('status');
+const readButton = document.getElementById('read');
+const languageSelect = document.getElementById('language');
 
-function chooseImage(file){
- if(!file)return;
- if(!file.type.startsWith('image/')){
-  status.textContent='اختار ملف صورة صحيح.';
-  return;
- }
- selectedImage=file;
- preview.src=URL.createObjectURL(file);
- preview.style.display='block';
- status.textContent='الصورة جاهزة. اضغط اقرأ الأسئلة.';
+let selectedImage = null;
+let busy = false;
+
+function status(message) {
+  statusBox.textContent = message;
 }
-camera.onchange=e=>chooseImage(e.target.files[0]);
-gallery.onchange=e=>chooseImage(e.target.files[0]);
 
-document.getElementById('read').onclick=async()=>{
- if(!selectedImage){
-  status.textContent='اختار صورة الأول.';
-  return;
- }
- if(!window.Tesseract){
-  status.textContent='تعذر تحميل قارئ الصور. اتصل بالإنترنت ثم أعد فتح الموقع.';
-  return;
- }
- try{
-  status.textContent='جاري تحميل ملفات قراءة اللغة... انتظر.';
-  const worker=await Tesseract.createWorker('ara+eng',1,{
-   logger:m=>{
-    if(m.status)status.textContent=m.status+
-      (m.progress!==undefined?' '+Math.round(m.progress*100)+'%':'');
-   }
+function chooseImage(file) {
+  if (!file) return;
+
+  if (!file.type || !file.type.startsWith('image/')) {
+    status('الملف المختار مش صورة. اختار صورة JPG أو PNG.');
+    return;
+  }
+
+  if (file.size > 15 * 1024 * 1024) {
+    status('حجم الصورة كبير جدًا. اختار صورة أقل من 15 ميجابايت.');
+    return;
+  }
+
+  selectedImage = file;
+
+  if (preview.dataset.objectUrl) {
+    URL.revokeObjectURL(preview.dataset.objectUrl);
+  }
+
+  const objectUrl = URL.createObjectURL(file);
+  preview.dataset.objectUrl = objectUrl;
+  preview.src = objectUrl;
+  preview.style.display = 'block';
+
+  status('الصورة جاهزة ✅ اضغط «اقرأ الأسئلة من الصورة».');
+}
+
+camera.addEventListener('change', e => chooseImage(e.target.files[0]));
+gallery.addEventListener('change', e => chooseImage(e.target.files[0]));
+
+document.getElementById('clearImage').addEventListener('click', () => {
+  selectedImage = null;
+  camera.value = '';
+  gallery.value = '';
+  preview.removeAttribute('src');
+  preview.style.display = 'none';
+
+  if (preview.dataset.objectUrl) {
+    URL.revokeObjectURL(preview.dataset.objectUrl);
+    delete preview.dataset.objectUrl;
+  }
+
+  status('تم إلغاء الصورة. اختار صورة جديدة وقت ما تحب.');
+});
+
+readButton.addEventListener('click', async () => {
+  if (busy) return;
+
+  if (!selectedImage) {
+    status('اختار صورة الأول.');
+    return;
+  }
+
+  if (!navigator.onLine) {
+    status('مفيش اتصال بالإنترنت. اتصل بالإنترنت وحاول تاني.');
+    return;
+  }
+
+  if (!window.Tesseract) {
+    status('مكتبة قراءة الصور لم تتحمّل. حدّث الصفحة وتأكد من الإنترنت، ثم حاول مرة أخرى.');
+    return;
+  }
+
+  busy = true;
+  readButton.disabled = true;
+
+  let worker = null;
+
+  try {
+    const lang = languageSelect.value;
+    status('جاري تجهيز قارئ الصور وملفات اللغة... قد يستغرق أول تشغيل عدة دقائق.');
+
+    worker = await Tesseract.createWorker(lang, 1, {
+      logger: message => {
+        if (message.status) {
+          const percent = typeof message.progress === 'number'
+            ? ' ' + Math.round(message.progress * 100) + '%'
+            : '';
+          status('جاري قراءة الصورة: ' + message.status + percent);
+        }
+      },
+      errorHandler: error => {
+        console.error('Tesseract worker error:', error);
+      }
+    });
+
+    status('جاري استخراج النص من الصورة...');
+
+    const result = await worker.recognize(selectedImage);
+    const extracted = result && result.data ? result.data.text : '';
+
+    question.value = (extracted || '').trim();
+
+    if (question.value) {
+      status('تم استخراج النص ✅ راجعه وعدّل أي أخطاء في الكلمات أو الأرقام.');
+      try {
+        localStorage.setItem('ehab_exam_question', question.value);
+      } catch (e) {}
+    } else {
+      status('لم أتمكن من قراءة نص واضح. جرّب صورة أوضح أو اختر لغة واحدة.');
+    }
+  } catch (error) {
+    console.error('OCR error:', error);
+
+    let detail = '';
+    if (error && error.message) detail = '\nالتفاصيل: ' + error.message;
+
+    status(
+      'فشلت قراءة الصورة. جرّب اتصال إنترنت ثابت، وحدّث الصفحة، ثم اختر لغة واحدة فقط.' +
+      detail
+    );
+  } finally {
+    if (worker) {
+      try {
+        await worker.terminate();
+      } catch (e) {}
+    }
+
+    busy = false;
+    readButton.disabled = false;
+  }
+});
+
+document.getElementById('save').addEventListener('click', () => {
+  try {
+    localStorage.setItem('ehab_exam_question', question.value);
+    status('تم حفظ النص على الجهاز ✅');
+  } catch (error) {
+    status('تعذر الحفظ. قد يكون التخزين المحلي غير متاح في المتصفح.');
+  }
+});
+
+document.getElementById('restore').addEventListener('click', () => {
+  try {
+    question.value = localStorage.getItem('ehab_exam_question') || '';
+    status(question.value ? 'تم استرجاع النص المحفوظ.' : 'لا يوجد نص محفوظ حتى الآن.');
+  } catch (error) {
+    status('تعذر استرجاع النص المحفوظ.');
+  }
+});
+
+document.getElementById('copy').addEventListener('click', async () => {
+  if (!question.value.trim()) {
+    status('مفيش نص لنسخه. اقرأ صورة أو اكتب النص الأول.');
+    return;
+  }
+
+  try {
+    await navigator.clipboard.writeText(question.value);
+    status('تم نسخ النص ✅');
+  } catch (error) {
+    question.focus();
+    question.select();
+    status('حدد النص وانسخه يدويًا باستخدام نسخ من قائمة المتصفح.');
+  }
+});
+
+document.getElementById('download').addEventListener('click', () => {
+  if (!question.value.trim()) {
+    status('اكتب النص أو استخرج نصًا من صورة أولًا.');
+    return;
+  }
+
+  const blob = new Blob(['\uFEFF' + question.value], {
+    type: 'text/plain;charset=utf-8'
   });
-  const result=await worker.recognize(selectedImage);
-  question.value=result.data.text;
-  await worker.terminate();
-  status.textContent=question.value.trim()
-   ?'تم استخراج النص. راجع الأرقام والكلمات للتأكد من دقتها.'
-   :'لم يتم التعرف على نص واضح. جرّب صورة أوضح.';
- }catch(error){
-  status.textContent='حدث خطأ أثناء القراءة. تأكد من الإنترنت وجرّب صورة أوضح.';
- }
-};
 
-document.getElementById('save').onclick=()=>{
- try{
-  localStorage.setItem('ehab_exam_question',question.value);
-  status.textContent='تم حفظ النص على الجهاز.';
- }catch(e){status.textContent='تعذر الحفظ.';}
-};
-document.getElementById('restore').onclick=()=>{
- question.value=localStorage.getItem('ehab_exam_question')||'';
- status.textContent=question.value?'تم استرجاع النص.':'لا يوجد نص محفوظ.';
-};
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = 'Ehab-AI-Solver-questions.txt';
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+
+  status('تم تجهيز ملف النص للتنزيل.');
+});
+
+document.getElementById('prepare').addEventListener('click', async () => {
+  if (!question.value.trim()) {
+    status('استخرج نص الصورة أو اكتب الأسئلة أولًا.');
+    return;
+  }
+
+  const prompt = 'حل الأسئلة التالية للصف الثالث الإعدادي باللغة العربية. اكتب إجابة كل سؤال مع شرح مختصر، وإذا كان النص غير واضح فاطلب توضيحه بدلًا من التخمين:\n\n' + question.value;
+
+  try {
+    await navigator.clipboard.writeText(prompt);
+    status('تم نسخ الأسئلة مع طلب الحل. افتح أداة ذكاء اصطناعي والصق النص هناك.');
+  } catch (error) {
+    question.value = prompt;
+    status('أضفنا طلب الحل إلى النص. انسخه واستخدمه في أداة ذكاء اصطناعي.');
+  }
+});
+
+try {
+  const saved = localStorage.getItem('ehab_exam_question');
+  if (saved) question.value = saved;
+} catch (error) {}
 </script>
 </body>
 </html>
