@@ -8,97 +8,113 @@
 <title>Ehab AI Solver</title>
 <style>
 *{box-sizing:border-box}
-body{margin:0;background:#101b35;color:#fff;font-family:Arial,sans-serif}
-header{text-align:center;padding:28px 15px;background:#172746;border-bottom:2px solid #22c8ef}
-h1{color:#62d9ff;margin:10px 0}
-main{max-width:650px;margin:auto;padding:16px}
-.card{background:#1b2d4c;padding:18px;border-radius:18px;margin:16px 0;box-shadow:0 5px 18px #0002}
-p{line-height:1.8;color:#d6e4f7}
-button,.upload{display:block;width:100%;padding:14px;margin-top:12px;border:0;border-radius:12px;background:#16b9dc;color:#071629;font-size:16px;font-weight:bold;text-align:center;cursor:pointer}
-.secondary{background:#dceaff}
+body{margin:0;background:#101b35;color:white;font-family:Arial,sans-serif}
+header{text-align:center;padding:24px 12px;background:#172746}
+h1{color:#62d9ff}
+main{max-width:650px;margin:auto;padding:15px}
+.card{background:#1b2d4c;padding:18px;border-radius:16px;margin:15px 0}
+p{line-height:1.8;color:#dce8f7}
+button,.upload{display:block;width:100%;padding:14px;margin-top:12px;border:0;border-radius:11px;background:#16b9dc;color:#071629;font-size:16px;font-weight:bold;text-align:center}
+.secondary{background:#e0eaff}
 input[type=file]{display:none}
-textarea{width:100%;min-height:130px;padding:12px;border-radius:10px;font-size:17px}
-#preview{display:none;width:100%;margin-top:15px;border-radius:12px}
-.small{font-size:13px;color:#bdcbe0}
-#status{white-space:pre-wrap;line-height:1.8}
+textarea{width:100%;min-height:140px;padding:12px;font-size:17px;border-radius:10px}
+#preview{display:none;width:100%;margin-top:15px;border-radius:10px}
+#status{white-space:pre-wrap}
+.small{font-size:13px}
 </style>
 </head>
 <body>
 <header>
-<div style="font-size:44px">📸 🧠</div>
+<div style="font-size:42px">📸 🧠</div>
 <h1>Ehab AI Solver</h1>
-<p>مساعدك في فهم الأسئلة ومراجعة الإجابات</p>
+<p>صوّر السؤال وحوّل الصورة إلى نص</p>
 </header>
 <main>
 <section class="card">
-<h2>📷 صوّر ورقة الأسئلة</h2>
-<label class="upload" for="camera">📸 فتح الكاميرا</label>
+<h2>📷 صورة الامتحان</h2>
+<label class="upload" for="camera">فتح الكاميرا</label>
 <input id="camera" type="file" accept="image/*" capture="environment">
-<label class="upload secondary" for="gallery">🖼️ اختيار صورة</label>
+<label class="upload secondary" for="gallery">اختيار صورة من المعرض</label>
 <input id="gallery" type="file" accept="image/*">
-<img id="preview" alt="معاينة ورقة الأسئلة">
-<p id="status">اختار صورة أو اكتب السؤال بنفسك.</p>
+<img id="preview" alt="صورة السؤال">
+<button id="read">📝 اقرأ الأسئلة من الصورة</button>
+<p id="status">اختار صورة واضحة، ثم اضغط اقرأ الأسئلة.</p>
 </section>
 
 <section class="card">
-<h2>📝 السؤال</h2>
-<textarea id="question" placeholder="اكتب السؤال هنا أو راجع النص الذي قرأته من الورقة..."></textarea>
-<button id="save">💾 حفظ السؤال</button>
-<button id="restore" class="secondary">📂 استرجاع السؤال المحفوظ</button>
+<h2>النص المستخرج</h2>
+<textarea id="question" placeholder="النص المقروء سيظهر هنا..."></textarea>
+<button id="save">حفظ النص</button>
+<button id="restore" class="secondary">استرجاع النص المحفوظ</button>
 </section>
 
 <section class="card">
-<h2>✅ الحل</h2>
-<p>النسخة الحالية تجهز الصورة وتحفظ السؤال على جهازك. محرك الذكاء الاصطناعي وقراءة النص من الصور لم تتم إضافتهما بعد.</p>
-<p class="small">لن نخمن الإجابات أو ندّعي أن الموقع حلّ السؤال قبل توصيل محرك حل حقيقي.</p>
-</section>
-
-<section class="card">
-<h2>📵 التشغيل دون إنترنت</h2>
-<p>هذه الصفحة تحتاج إلى نشرها وفتحها أولًا. التشغيل المستقل دون إنترنت يحتاج ملفات إضافية محفوظة محليًا.</p>
+<h2>🧠 الحل</h2>
+<p>قارئ الصور يستخرج النص فقط. لم نضف بعد نموذج ذكاء اصطناعي يحل الأسئلة تلقائيًا.</p>
+<p class="small">اختبر النص المستخرج وصحّح أي أرقام أو كلمات قرأها بشكل خاطئ.</p>
 </section>
 </main>
 
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <script>
 const camera=document.getElementById('camera');
 const gallery=document.getElementById('gallery');
 const preview=document.getElementById('preview');
-const status=document.getElementById('status');
 const question=document.getElementById('question');
+const status=document.getElementById('status');
+let selectedImage=null;
 
-function showImage(file){
+function chooseImage(file){
  if(!file)return;
  if(!file.type.startsWith('image/')){
-  status.textContent='من فضلك اختر صورة صحيحة.';
+  status.textContent='اختار ملف صورة صحيح.';
   return;
  }
- const reader=new FileReader();
- reader.onload=()=>{
-  preview.src=reader.result;
-  preview.style.display='block';
-  status.textContent='تم فتح الصورة. لم تتم قراءة الأسئلة آليًا بعد.';
-  try{
-   localStorage.setItem('ehab_exam_image',reader.result);
-  }catch(e){
-   status.textContent+=' تعذر حفظ الصورة الكبيرة؛ احتفظ بها في المعرض.';
-  }
- };
- reader.readAsDataURL(file);
+ selectedImage=file;
+ preview.src=URL.createObjectURL(file);
+ preview.style.display='block';
+ status.textContent='الصورة جاهزة. اضغط اقرأ الأسئلة.';
 }
-camera.addEventListener('change',e=>showImage(e.target.files[0]));
-gallery.addEventListener('change',e=>showImage(e.target.files[0]));
+camera.onchange=e=>chooseImage(e.target.files[0]);
+gallery.onchange=e=>chooseImage(e.target.files[0]);
+
+document.getElementById('read').onclick=async()=>{
+ if(!selectedImage){
+  status.textContent='اختار صورة الأول.';
+  return;
+ }
+ if(!window.Tesseract){
+  status.textContent='تعذر تحميل قارئ الصور. اتصل بالإنترنت ثم أعد فتح الموقع.';
+  return;
+ }
+ try{
+  status.textContent='جاري تحميل ملفات قراءة اللغة... انتظر.';
+  const worker=await Tesseract.createWorker('ara+eng',1,{
+   logger:m=>{
+    if(m.status)status.textContent=m.status+
+      (m.progress!==undefined?' '+Math.round(m.progress*100)+'%':'');
+   }
+  });
+  const result=await worker.recognize(selectedImage);
+  question.value=result.data.text;
+  await worker.terminate();
+  status.textContent=question.value.trim()
+   ?'تم استخراج النص. راجع الأرقام والكلمات للتأكد من دقتها.'
+   :'لم يتم التعرف على نص واضح. جرّب صورة أوضح.';
+ }catch(error){
+  status.textContent='حدث خطأ أثناء القراءة. تأكد من الإنترنت وجرّب صورة أوضح.';
+ }
+};
 
 document.getElementById('save').onclick=()=>{
  try{
   localStorage.setItem('ehab_exam_question',question.value);
-  status.textContent='تم حفظ السؤال على هذا الجهاز.';
- }catch(e){
-  status.textContent='تعذر الحفظ.';
- }
+  status.textContent='تم حفظ النص على الجهاز.';
+ }catch(e){status.textContent='تعذر الحفظ.';}
 };
 document.getElementById('restore').onclick=()=>{
  question.value=localStorage.getItem('ehab_exam_question')||'';
- status.textContent=question.value?'تم استرجاع السؤال.':'لا يوجد سؤال محفوظ.';
+ status.textContent=question.value?'تم استرجاع النص.':'لا يوجد نص محفوظ.';
 };
 </script>
 </body>
